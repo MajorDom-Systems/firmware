@@ -1,4 +1,4 @@
-"""Decide which packages to release, and optionally patch-bump them (the STARK-PLACE release plan, on package.toml).
+"""Decide which packages to release, and optionally patch-bump them (per-package release plan, on package.toml).
 
 A package is included when any of:
   * changed     - a file under its dir changed since --base (CHANGELOG and docs excluded);

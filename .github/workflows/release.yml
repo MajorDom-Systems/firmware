@@ -1,4 +1,4 @@
-# Per-package releases (STARK-PLACE pattern): each package has its own version and `<name>-v<version>` tags.
+# Per-package releases: each package has its own version and `<name>-v<version>` tags.
 #   1. prepare - plan which packages changed, patch-bump already-released ones, commit all bumps in one commit.
 #   2. release - matrix per package (fail-fast off): assemble dist/ with tools/build.py, then a GitHub pre-release
 #                (= dev channel). Promote to stable with `gh release edit <tag> --prerelease=false` after the cage test.

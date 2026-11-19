@@ -1,6 +1,6 @@
 # Generates the channel site from every release, signs the manifests with minisign, deploys GitHub Pages.
 # The single Pages deployer. Automatic triggers act only once the repo variable CHANNEL_LIVE is 'true'.
-# Signing runs in the `firmware-signing` environment (required reviewer: Mark) with the secret MINISIGN_SECRET_KEY
+# Signing runs in the `firmware-signing` environment (with a required reviewer) with the secret MINISIGN_SECRET_KEY
 # (and MINISIGN_PASSWORD if the key is encrypted); without them the run fails at the signing step.
 name: Channel site (Pages)
 
