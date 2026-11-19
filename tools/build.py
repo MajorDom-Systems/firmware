@@ -1,7 +1,7 @@
 """Assemble one package into dist/: the verified `.gbl` (plus `_full.s37` for source builds), `.meta.json`, `.cdx.json`.
 
 Source types in package.toml `[source]`:
-  * staged - a file on the lab NAS, verified by sha256 (phase 1; GitHub runners cannot reach it, use publish_local);
+  * staged - a local build file given with --file, verified by sha256 (phase 1; GitHub runners have no copy, use publish_local);
   * url    - a mirrored third-party build, downloaded and verified by sha256;
   * build  - built from build.yaml inside the builder image (phase 2, not implemented yet).
 """
@@ -23,10 +23,11 @@ def fetch(package: Package, dest: Path, staged_file: Path | None = None) -> Path
     source = package.source
     match source["type"]:
         case "staged":
-            src = staged_file or Path(source["path"])
-            if not src.exists():
-                raise SourceError(f"{package.name}: staged file {src} not found; run on the lab node or pass --file")
-            shutil.copyfile(src, dest)
+            if not staged_file:
+                raise SourceError(f"{package.name}: a staged package needs its build file, pass --file")
+            if not staged_file.exists():
+                raise SourceError(f"{package.name}: staged file {staged_file} not found")
+            shutil.copyfile(staged_file, dest)
         case "url":
             with urllib.request.urlopen(source["url"], timeout=60) as response, dest.open("wb") as f:
                 shutil.copyfileobj(response, f)
@@ -50,7 +51,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("package_dir", type=Path)
     parser.add_argument("--out", type=Path, default=Path("dist"))
-    parser.add_argument("--file", type=Path, help="override the staged file path")
+    parser.add_argument("--file", type=Path, help="the build file of a staged package")
     args = parser.parse_args()
     for path in build(load_package(args.package_dir), args.out, args.file):
         print(path)

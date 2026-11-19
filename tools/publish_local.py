@@ -1,4 +1,4 @@
-"""Phase 1: release a staged package from a lab node (where the NAS is mounted) with the gh CLI.
+"""Phase 1: release a staged package from its local build file with the gh CLI.
 
 Creates the `<name>-v<version>` tag on the current origin/develop commit as a pre-release (dev channel only).
 Promotion to stable stays a manual `gh release edit <tag> --prerelease=false` after the cage test.
@@ -21,7 +21,7 @@ def notes(package_dir: Path, version: str) -> str:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("package_dir", type=Path)
-    parser.add_argument("--file", type=Path, help="override the staged file path")
+    parser.add_argument("--file", type=Path, help="the build file of a staged package")
     parser.add_argument("--target", default="develop", help="branch or commit to tag")
     parser.add_argument("--draft", action="store_true", help="create a draft release (not in any channel)")
     parser.add_argument("--dry-run", action="store_true", help="assemble dist/ and print the gh command only")

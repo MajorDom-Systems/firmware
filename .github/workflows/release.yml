@@ -3,7 +3,7 @@
 #   2. release - matrix per package (fail-fast off): assemble dist/ with tools/build.py, then a GitHub pre-release
 #                (= dev channel). Promote to stable with `gh release edit <tag> --prerelease=false` after the cage test.
 # Pushes only plan (dry run). Releases happen on dispatch with dry_run unticked.
-# Staged packages (lab NAS, unreachable from GitHub runners) are released with tools/publish_local.py on a lab node.
+# Staged packages (build file outside the repo) are released with tools/publish_local.py --file.
 name: Release packages
 
 on:
@@ -81,7 +81,7 @@ jobs:
         id: build
         run: |
           if [ "${{ matrix.source }}" = "staged" ]; then
-            echo "::notice title=${{ matrix.package }}::staged on the lab NAS; release it with 'python3 -m tools.publish_local ${{ matrix.dir }}' on a lab node"
+            echo "::notice title=${{ matrix.package }}::staged outside the repo; release it with 'python3 -m tools.publish_local ${{ matrix.dir }} --file <build file>'"
             echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi

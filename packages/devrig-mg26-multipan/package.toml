@@ -26,9 +26,8 @@ flow = "none"
 image = "multiprotocol:sisdk-2025.6.3"
 
 # Built on the bench 2026-07-30; never committed. The release tooling fetches it by sha256.
-# Phase 1: staged on the lab NAS (not reachable from GitHub runners): publish with tools/publish_local.py on a lab node.
+# Phase 1: staged outside the repo (GitHub runners have no copy): publish with tools/publish_local.py --file.
 [source]
 type = "staged"
-path = "/tank/majordom/firmware/2026-11-03/cm4/mg26-fw/rcp.gbl"
 sha256 = "d078be7fb9152fb9f0474e2e0f4abac63aef6c2c4c6c78e23997ccb91f2034f8"
 size = 124368
