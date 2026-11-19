@@ -6,6 +6,6 @@ Firmware for the radios MajorDom drives (Silicon Labs EFR32 / ZGM230), published
 - `packages/<family>-<kind>/package.toml`: one firmware per family and kind, released as `<package>-v<version>` with `.gbl`, `.meta.json`, `.cdx.json` (and `_full.s37` for source builds).
 - `tools/`: `release_plan`, `build`, `meta`, `manifest_gen`, `publish_local`. `builder/`: the SiSDK build image (phase 2).
 
-Releases start as pre-releases (dev channel); `gh release edit <tag> --prerelease=false` promotes one to stable.
+Phase 1 releases staged builds from a lab node with the NAS mounted and `gh` authenticated: `python3 -m tools.publish_local packages/<package> [--dry-run]`. Releases start as pre-releases (dev channel); `gh release edit <tag> --prerelease=false` promotes one to stable.
 
 Tests: `poetry install && poetry run pytest`.
