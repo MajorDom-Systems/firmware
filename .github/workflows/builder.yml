@@ -1,0 +1,34 @@
+# Builds the firmware builder image and pushes it to GHCR. Dispatch only until phase 2 pins the Silicon Labs downloads.
+name: Builder image
+
+on:
+  workflow_dispatch:
+    inputs:
+      push:
+        description: "Push to GHCR"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: sdk
+        run: echo "version=$(sed -n 's/^ARG SISDK_VERSION=v//p' builder/Dockerfile)" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v3
+        if: inputs.push
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: builder
+          platforms: linux/amd64
+          push: ${{ inputs.push }}
+          tags: ghcr.io/majordom-systems/firmware-builder:sisdk-${{ steps.sdk.outputs.version }}

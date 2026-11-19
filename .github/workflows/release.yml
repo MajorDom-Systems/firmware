@@ -1,0 +1,104 @@
+# Per-package releases (STARK-PLACE pattern): each package has its own version and `<name>-v<version>` tags.
+#   1. prepare - plan which packages changed, patch-bump already-released ones, commit all bumps in one commit.
+#   2. release - matrix per package (fail-fast off): assemble dist/ with tools/build.py, then a GitHub pre-release
+#                (= dev channel). Promote to stable with `gh release edit <tag> --prerelease=false` after the cage test.
+# Pushes only plan (dry run). Releases happen on dispatch with dry_run unticked.
+# Staged packages (lab NAS, unreachable from GitHub runners) are released with tools/publish_local.py on a lab node.
+name: Release packages
+
+on:
+  push:
+    branches: [develop]
+    paths: [packages/**, tools/**, .github/workflows/release.yml]
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: "'all', or comma-separated package names"
+        default: all
+      dry_run:
+        description: "Assemble and upload a workflow artifact only, no tags or releases"
+        type: boolean
+        default: true
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  DRY_RUN: ${{ github.event_name != 'workflow_dispatch' || inputs.dry_run }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      any: ${{ steps.plan.outputs.any }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Plan (and apply bumps on a real run)
+        id: plan
+        run: |
+          BASE="${{ github.event.before }}"
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then BASE=""; fi
+          DISPATCH="${{ github.event_name == 'workflow_dispatch' && inputs.packages || '' }}"
+          APPLY=$([ "$DRY_RUN" = "true" ] || echo --apply-bumps)
+          python3 -m tools.release_plan --base "$BASE" --dispatch "$DISPATCH" $APPLY
+      - name: Commit bumps
+        if: steps.plan.outputs.any == 'true' && env.DRY_RUN != 'true'
+        run: |
+          if ! git diff --quiet -- 'packages/*/package.toml'; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -am "Bump package versions [skip ci]"
+            git push
+          fi
+
+  release:
+    needs: prepare
+    if: needs.prepare.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.prepare.outputs.matrix).include }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Assemble ${{ matrix.package }}
+        id: build
+        run: |
+          if [ "${{ matrix.source }}" = "staged" ]; then
+            echo "::notice title=${{ matrix.package }}::staged on the lab NAS; release it with 'python3 -m tools.publish_local ${{ matrix.dir }}' on a lab node"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python3 -m tools.build "${{ matrix.dir }}" --out dist
+      - name: Upload dry-run artifact
+        if: steps.build.outputs.skip != 'true' && env.DRY_RUN == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.tag }}
+          path: dist/
+      - name: Pre-release ${{ matrix.tag }}
+        if: steps.build.outputs.skip != 'true' && env.DRY_RUN != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RANGE="${{ matrix.prev_tag }}..HEAD"
+          [ -z "${{ matrix.prev_tag }}" ] && RANGE="HEAD"
+          git log --pretty=format:"- %s" "$RANGE" -- "${{ matrix.dir }}" > notes.md
+          gh release create "${{ matrix.tag }}" dist/* --prerelease \
+            --title "${{ matrix.package }} ${{ matrix.version }}" --notes-file notes.md --target "$(git rev-parse HEAD)"
