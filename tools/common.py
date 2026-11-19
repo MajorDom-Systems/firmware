@@ -49,7 +49,7 @@ def load_targets(targets_dir: Path = ROOT / "targets") -> dict[str, dict[str, An
     for toml in sorted(targets_dir.glob("*/*/target.toml")):
         key = f"{toml.parent.parent.name}/{toml.parent.name}"
         target = tomllib.loads(toml.read_text())
-        if (board := toml.parent / "board.json").exists():
+        if (toml.parent / "board.json").exists():
             target["board_json"] = f"targets/{key}/board.json"
         targets[key] = target
     return targets
