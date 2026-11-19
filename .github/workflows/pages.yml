@@ -48,11 +48,11 @@ jobs:
             gh release download "$tag" --repo ${{ github.repository }} --pattern '*.meta.json' --dir metas
           done
       - name: Generate site
-        run: python3 -m tools.manifest_gen --releases releases.json --metas metas --out site
+        run: python3 -m tools.manifest_gen --releases releases.json --metas metas --out _site
       - uses: actions/upload-artifact@v4
         with:
           name: site-unsigned
-          path: site/
+          path: _site/
 
   sign:
     needs: generate

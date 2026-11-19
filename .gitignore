@@ -11,3 +11,4 @@ site/index.html
 *.bin
 *.minisig
 *.key
+_site/
