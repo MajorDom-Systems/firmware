@@ -3,8 +3,8 @@
   "board": "hub-v1",
   "revision": 1,
   "radios": [
-    {"name": "mg26a", "path": "/dev/ttyAMA2", "driver": "silabs", "firmware": "multipan-rcp", "params": {"baud": 460800, "flow_control": true, "reset_gpio": "gpiochip0:23"}},
-    {"name": "mg26b", "path": "/dev/ttyAMA3", "driver": "silabs", "firmware": "multipan-rcp", "params": {"baud": 460800, "flow_control": true, "reset_gpio": "gpiochip0:24"}},
+    {"name": "mg26a", "path": "/dev/ttyAMA2", "driver": "silabs", "firmware": "multipan-rcp", "params": {"baud": 115200, "flow_control": true, "reset_gpio": "gpiochip0:23"}},
+    {"name": "mg26b", "path": "/dev/ttyAMA3", "driver": "silabs", "firmware": "multipan-rcp", "params": {"baud": 115200, "flow_control": true, "reset_gpio": "gpiochip0:24"}},
     {"name": "zwave", "path": "/dev/ttyAMA4", "driver": "zwave", "params": {"baud": 115200, "reset_gpio": "gpiochip0:25"}}
   ]
 }
