@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "board": "devrig-cm4",
+  "revision": 1,
+  "radios": [
+    {"name": "mg26", "path": "/dev/ttyAMA3", "driver": "silabs", "firmware": "multipan-rcp", "params": {"baud": 115200, "flow_control": false, "reset_gpio": "gpiochip0:23"}},
+    {"name": "zwave", "path": "/dev/ttyAMA4", "driver": "zwave", "params": {"baud": 115200}}
+  ]
+}

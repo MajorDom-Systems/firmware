@@ -1,0 +1,21 @@
+# CM4 Nano-B dev rig: MGM260P Explorer Kit (EK2713A) and ZGM230 Dev Kit (BRD2603A) on GPIO UARTs.
+# Kept as a first-class target for the life of the bench: the CI hardware gate runs on it.
+id = "devrig-cm4"
+vendor = "majordom"
+name = "MajorDom CM4 dev rig"
+host = "cm4"
+match = { board_json = "devrig-cm4", dt_model = "Compute Module 4" }
+
+[slots.mg26]
+chip = "EFR32MG26"
+module = "MGM260PD32VNA2"
+firmware = "devrig-mg26"
+uart = { pins = { tx = "PA04", rx = "PA05" }, flow_control = false }
+bootloader = { type = "gecko-uart-xmodem", enter = ["app"] }
+flashers = ["usf", "cpcd"]
+
+[slots.zwave]
+chip = "ZGM230S"
+firmware = "devrig-zgm230"
+bootloader = { type = "gecko-uart-xmodem", enter = ["serialapi"] }
+flashers = ["zwave-js"]

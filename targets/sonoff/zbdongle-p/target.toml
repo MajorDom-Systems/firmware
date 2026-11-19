@@ -1,0 +1,10 @@
+# TI CC2652P, not Silicon Labs: detected and identified only, never flashed by us.
+id = "zbdongle-p"
+vendor = "sonoff"
+name = "Sonoff Zigbee 3.0 USB Dongle Plus (ZBDongle-P)"
+host = "usb"
+identify_only = true
+match = { usb = [{ vid = "10c4", pid = "ea60", product = ["Sonoff Zigbee 3.0 USB Dongle Plus"] }] }
+
+[slots.radio]
+chip = "CC2652P"

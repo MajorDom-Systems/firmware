@@ -1,0 +1,33 @@
+# MajorDom Hub PCB v1 (CM4): two MGM260P radios with RTS/CTS and one ZGM230. Not built yet.
+# No BOOT pin in the v1 pin budget: a valid-but-wrong app is recoverable only over SWD.
+id = "hub-v1"
+vendor = "majordom"
+name = "MajorDom Hub v1"
+host = "cm4"
+match = { board_json = "hub-v1", dt_model = "Compute Module 4" }
+
+[slots.mg26a]
+chip = "EFR32MG26"
+module = "MGM260PD32VNA2"
+firmware = "hub-v1-mg26"
+uart = { overlay = "uart2,ctsrts", pins = { tx = 0, rx = 1, cts = 2, rts = 3 }, flow_control = true }
+reset = { gpio = 23, active = "low" }
+bootloader = { type = "gecko-uart-xmodem", enter = ["app"] }
+flashers = ["usf", "cpcd"]
+
+[slots.mg26b]
+chip = "EFR32MG26"
+module = "MGM260PD32VNA2"
+firmware = "hub-v1-mg26"
+uart = { overlay = "uart3,ctsrts", pins = { tx = 4, rx = 5, cts = 6, rts = 7 }, flow_control = true }
+reset = { gpio = 24, active = "low" }
+bootloader = { type = "gecko-uart-xmodem", enter = ["app"] }
+flashers = ["usf", "cpcd"]
+
+[slots.zwave]
+chip = "ZGM230S"
+firmware = "hub-v1-zgm230"
+uart = { overlay = "uart4", pins = { tx = 8, rx = 9 }, flow_control = false }
+reset = { gpio = 25, active = "low" }
+bootloader = { type = "gecko-uart-xmodem", enter = ["serialapi"] }
+flashers = ["zwave-js"]
