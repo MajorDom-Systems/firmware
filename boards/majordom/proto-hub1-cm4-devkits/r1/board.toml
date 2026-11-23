@@ -1,0 +1,26 @@
+# Hub 1 prototype: CM4 Nano-B with an MGM260P Explorer Kit (EK2713A) and a ZGM230 Dev Kit (BRD2603A) on GPIO UARTs.
+# Dev-only (proto-): runs the CI hardware gate; never listed on the public channel.
+name = "MajorDom Hub 1 prototype (CM4 + dev kits)"
+host = "cm4"
+match = { board_json = "proto-hub1-cm4-devkits", dt_model = "Compute Module 4" }
+
+[slots.mg26]
+label = "MGM260P (EFR32MG26)"
+# TODO: the host GPIO numbers of these UART lines; only the device node is known.
+pins = { uart = "/dev/ttyAMA3" }
+flow_control = false
+reset = { gpio = "gpiochip0:23" }
+bootloader = { type = "gecko-uart-xmodem", enter = ["app"] }
+flashers = ["usf", "cpcd"]
+firmware = ["mg26-multipan-pa04-pa05"]
+default = "mg26-multipan-pa04-pa05"
+
+[slots.zwave]
+label = "ZGM230S"
+# TODO: the host GPIO numbers of these UART lines; only the device node is known.
+pins = { uart = "/dev/ttyAMA4" }
+flow_control = false
+bootloader = { type = "gecko-uart-xmodem", enter = ["serialapi"] }
+flashers = ["zwave-js"]
+firmware = ["zgm230-zwave-serial-api-pc05-pc06"]
+default = "zgm230-zwave-serial-api-pc05-pc06"

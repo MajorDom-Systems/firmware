@@ -1,0 +1,28 @@
+name = "skyconnect-zigbee"
+version = "7.5.1"
+chip = "EFR32MG21"
+protocol = "ezsp"
+license = "MSLA"
+summary = "Zigbee NCP (EZSP 7.5.1.0) for the SkyConnect / Connect ZBT-1, mirrored from Nabu Casa's silabs-firmware-builder v2026.02.23."
+
+[sdk]
+name = "gsdk"
+version = "4.5.0"
+
+[stack]
+ezsp = "7.5.1.0"
+
+[serial]
+baud = 115200
+flow = "rtscts"
+
+# Nabu Casa's official build (Apache-2.0 builder, MSLA firmware), pinned by sha256 and listed straight from upstream.
+# Verify once when adding or bumping it: `python3 -m tools.mirror packages/<name>`.
+[source]
+type = "url"
+url = "https://github.com/NabuCasa/silabs-firmware-builder/releases/download/v2026.02.23/skyconnect_zigbee_ncp_7.5.1.0.gbl"
+sha256 = "5b9221fc1decb687cfe822de119443db06728a53a7ce465c7a14ef73c8e146ad"
+size = 241512
+upstream = "NabuCasa/silabs-firmware-builder v2026.02.23"
+# Channel the mirror is listed on (dev until it passes the cage test).
+channel = "dev"

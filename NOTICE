@@ -1,0 +1,3 @@
+The tooling in this repository (tools/, builder/, site/, .github/) is licensed under Apache-2.0, see LICENSE.
+
+The firmware images attached to this repository's GitHub Releases contain Silicon Labs code distributed under the Silicon Labs Master Software License Agreement (MSLA), https://www.silabs.com/about-us/legal/master-software-license-agreement. Mirrored third-party images keep their original licenses, named in each package's package.toml.

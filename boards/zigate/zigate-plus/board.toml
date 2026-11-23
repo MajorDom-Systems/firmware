@@ -1,0 +1,8 @@
+# Third-party stick (no rN folder). NXP JN5168: detected and identified only, never flashed by us.
+# 0403:6015 is shared with the ConBee III. The exact USB product string is unverified; "ZiGate" is HA ZHA's usb discovery pattern (*zigate*).
+name = "ZiGate+"
+host = "usb"
+identify_only = true
+match = { usb = [{ vid = "0403", pid = "6015", product = ["ZiGate"] }] }
+
+[slots.radio]

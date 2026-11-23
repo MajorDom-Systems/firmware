@@ -1,0 +1,8 @@
+# Third-party stick (no rN folder). Silicon Labs EFR32MG21, CH9102 USB bridge: detected and identified only, never flashed by us.
+# Product string ends in "V2", which tells it from the ZBDongle-P (its name is a prefix of this one); case varies between units. Seen in by-id paths on HA/ioBroker forums.
+name = "Sonoff Zigbee 3.0 USB Dongle Plus V2 (ZBDongle-E)"
+host = "usb"
+identify_only = true
+match = { usb = [{ vid = "1a86", pid = "55d4", product = ["Sonoff Zigbee 3.0 USB Dongle Plus V2", "SONOFF Zigbee 3.0 USB Dongle Plus V2"] }] }
+
+[slots.radio]

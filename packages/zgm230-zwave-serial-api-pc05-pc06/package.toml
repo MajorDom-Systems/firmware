@@ -1,0 +1,31 @@
+name = "zgm230-zwave-serial-api-pc05-pc06"
+version = "1.0.0"
+chip = "ZGM230S"
+protocol = "zwave-serial-api"
+license = "MSLA"
+summary = "Z-Wave Serial API controller for a ZGM230S on USART0 PC05/PC06, 115200, no flow control; RF region set by the host."
+
+[sdk]
+name = "sisdk"
+version = "2025.6.3"
+
+[serial]
+baud = 115200
+flow = "none"
+
+[source]
+type = "build"
+
+[build]
+builder = "silabs-sisdk"
+project = "sdk:protocol/z-wave/Apps/zwave_ncp_serial_api/zwave_ncp_serial_api_controller.slcp"
+with = "brd2603a"
+fw_type = "zwave-serial-api"
+# First flash address of the application (after the Gecko Bootloader); the GBL must not program below it.
+app_start = 0x08006000
+
+# Radio-chip side of the host UART (a build input, never in board.json). The kit default is PA08/PA09 (VCOM).
+[build.pins]
+peripheral = "USART0"
+tx = "PC05"
+rx = "PC06"

@@ -1,0 +1,39 @@
+name = "mg26-multipan-pa04-pa05"
+version = "1.0.0"
+chip = "EFR32MG26"
+protocol = "silabs-cpc"
+license = "MSLA"
+summary = "Multi-PAN RCP (Zigbee + OpenThread over CPC) for an EFR32MG26 on USART0 PA04/PA05, 115200, no flow control."
+
+[sdk]
+name = "sisdk"
+version = "2025.6.3"
+
+[stack]
+openthread = "SL-OPENTHREAD/2.7.3.0_GitHub-fb0446f53"
+cpc = "4.7.1"
+
+[serial]
+baud = 115200
+flow = "none"
+
+[requires]
+image = "multiprotocol:sisdk-2025.6.3"
+
+[source]
+type = "build"
+
+[build]
+builder = "silabs-sisdk"
+project = "sdk:protocol/openthread/sample-apps/ot-ncp/rcp-uart-802154.slcp"
+with = "brd2713a"
+fw_type = "rcp-uart-802154"
+cpc_security = false
+# First flash address of the application (after the Gecko Bootloader); the GBL must not program below it.
+app_start = 0x08006000
+
+# Radio-chip side of the host UART (a build input, never in board.json).
+[build.pins]
+peripheral = "USART0"
+tx = "PA04"
+rx = "PA05"

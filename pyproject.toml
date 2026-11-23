@@ -1,0 +1,20 @@
+[project]
+name = "majordom-firmware-tools"
+version = "0.1.0"
+description = "Release and channel tooling for MajorDom radio firmware"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[build-system]
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"

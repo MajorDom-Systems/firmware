@@ -1,0 +1,105 @@
+# Generates the channel site from every release, signs the manifests with minisign, deploys GitHub Pages.
+# The single Pages deployer. Automatic triggers act only once the repo variable CHANNEL_LIVE is 'true'.
+# Signing runs in the `firmware-signing` environment (with a required reviewer) with the secret MINISIGN_SECRET_KEY
+# (and MINISIGN_PASSWORD if the key is encrypted); without them the run fails at the signing step.
+name: Channel site (Pages)
+
+on:
+  workflow_run:
+    workflows: ["Release packages"]
+    types: [completed]
+  release:
+    types: [published, edited, deleted]
+  schedule:
+    - cron: "17 4 * * 1"   # weekly: refreshes issued_at/expires_at
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Generate the unsigned site as a workflow artifact only"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (vars.CHANNEL_LIVE == 'true' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dump releases and their meta.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --paginate repos/${{ github.repository }}/releases --jq '.[]' \
+            | python3 -c "import sys, json; json.dump([json.loads(l) for l in sys.stdin if l.strip()], open('releases.json', 'w'))"
+          mkdir -p metas
+          for tag in $(python3 -c "import json; print(' '.join(r['tag_name'] for r in json.load(open('releases.json')) if not r['draft']))"); do
+            gh release download "$tag" --repo ${{ github.repository }} --pattern '*.meta.json' --dir metas
+          done
+      - name: Generate site
+        run: python3 -m tools.manifest_gen --releases releases.json --metas metas --out _site
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-unsigned
+          path: _site/
+
+  sign:
+    needs: generate
+    if: github.event_name != 'workflow_dispatch' || inputs.dry_run == false
+    runs-on: ubuntu-latest
+    environment: firmware-signing
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: keys
+      - uses: actions/download-artifact@v4
+        with:
+          name: site-unsigned
+          path: site
+      - name: Sign manifests
+        env:
+          MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
+          MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+        run: |
+          if [ -z "$MINISIGN_SECRET_KEY" ]; then
+            echo "::error title=Signing key missing::Set the MINISIGN_SECRET_KEY secret in the firmware-signing environment"
+            exit 1
+          fi
+          if grep -q PLACEHOLDER keys/minisign.pub; then
+            echo "::error title=Public key missing::Commit the signing key's public half to keys/minisign.pub"
+            exit 1
+          fi
+          sudo apt-get update -qq && sudo apt-get install -y -qq minisign
+          umask 077 && printf '%s\n' "$MINISIGN_SECRET_KEY" > "$RUNNER_TEMP/minisign.key"
+          for f in site/v1/stable.json site/v1/dev.json; do
+            printf '%s\n' "$MINISIGN_PASSWORD" | minisign -S -s "$RUNNER_TEMP/minisign.key" -m "$f" -t "$(basename "$f") $(date -u +%FT%TZ)"
+            minisign -V -p keys/minisign.pub -m "$f"
+          done
+          rm -f "$RUNNER_TEMP/minisign.key"
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: sign
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

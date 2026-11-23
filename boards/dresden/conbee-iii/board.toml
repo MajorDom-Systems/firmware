@@ -1,0 +1,8 @@
+# Third-party stick (no rN folder). Silicon Labs EFR32MG21 behind an FTDI bridge: detected and identified only, never flashed by us.
+# By-id path: usb-dresden_elektronik_ConBee_III_<serial>. 0403:6015 is shared with the ZiGate+, told apart by product name.
+name = "dresden elektronik ConBee III"
+host = "usb"
+identify_only = true
+match = { usb = [{ vid = "0403", pid = "6015", product = ["ConBee III"] }] }
+
+[slots.radio]

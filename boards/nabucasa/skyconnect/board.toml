@@ -1,0 +1,9 @@
+# Third-party stick: no rN folder, its hardware revisions are not ours to track; the USB match rules identify it. EFR32MG21.
+name = "Home Assistant SkyConnect / Connect ZBT-1"
+host = "usb"
+match = { usb = [{ vid = "10c4", pid = "ea60", product = ["SkyConnect v1.0", "Home Assistant Connect ZBT-1"] }] }
+
+[slots.radio]
+bootloader = { type = "gecko-uart-xmodem", enter = ["app"] }
+flashers = ["usf"]
+firmware = ["skyconnect-zigbee", "skyconnect-thread"]

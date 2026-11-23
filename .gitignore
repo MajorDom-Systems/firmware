@@ -1,0 +1,14 @@
+__pycache__/
+*.py[co]
+.pytest_cache/
+.venv/
+dist/
+site/v1/
+site/index.html
+*.gbl
+*.s37
+*.hex
+*.bin
+*.minisig
+*.key
+_site/

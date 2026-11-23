@@ -1,0 +1,8 @@
+# Third-party stick (no rN folder). Microchip SAMR21 (ATSAMR21G18A): detected and identified only, never flashed by us.
+# By-id path: usb-dresden_elektronik_ingenieurtechnik_GmbH_ConBee_II_<serial>; HA ZHA usb discovery matches *conbee* on 1cf1:0030.
+name = "dresden elektronik ConBee II"
+host = "usb"
+identify_only = true
+match = { usb = [{ vid = "1cf1", pid = "0030", product = ["ConBee II"] }] }
+
+[slots.radio]

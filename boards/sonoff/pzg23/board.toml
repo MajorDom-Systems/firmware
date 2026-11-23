@@ -1,0 +1,8 @@
+# Third-party stick (no rN folder). Silicon Labs EFR32ZG23 (Z-Wave 800): detected and identified only, never flashed by us.
+# 10c4:ea60 is the generic CP210x id. Product string is from HA's zwave_js usb manifest (known device "SONOFF ZWave 800 Dongle Plus ZG23", manufacturer sonoff); unverified against a unit.
+name = "Sonoff Z-Wave 800 USB Dongle Plus (Dongle-PZG23)"
+host = "usb"
+identify_only = true
+match = { usb = [{ vid = "10c4", pid = "ea60", product = ["SONOFF ZWave 800 Dongle Plus"] }] }
+
+[slots.radio]

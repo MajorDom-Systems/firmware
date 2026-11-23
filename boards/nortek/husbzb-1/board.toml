@@ -1,0 +1,12 @@
+# Third-party stick (no rN folder). Two radios behind one USB hub: EM357 Zigbee and a 500-series Z-Wave chip. Detected and identified only, never flashed by us.
+# Product string: HA ZHA docs show /dev/serial/by-id/usb-Silicon_Labs_HubZ_Smart_Home_Controller_*. Z-Wave chip (ZM5304) is unverified.
+name = "Nortek HUSBZB-1"
+host = "usb"
+identify_only = true
+match = { usb = [{ vid = "10c4", pid = "8a2a", product = ["HubZ Smart Home Controller"] }] }
+
+[slots.zigbee]
+label = "EM357"
+
+[slots.zwave]
+label = "ZM5304"

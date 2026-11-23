@@ -1,0 +1,8 @@
+# Third-party stick (no rN folder). Z-Wave 500 series (ZM5101): detected and identified only, never flashed by us.
+# 0658:0200 carries no USB product string (by-id shows usb-0658_0200), so it can't be told from the HomeSeer SmartStick by name; chip is unverified.
+name = "Aeotec Z-Stick"
+host = "usb"
+identify_only = true
+match = { usb = [{ vid = "0658", pid = "0200" }] }
+
+[slots.radio]

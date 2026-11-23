@@ -1,0 +1,28 @@
+name = "skyconnect-thread"
+version = "2.7.2"
+chip = "EFR32MG21"
+protocol = "spinel"
+license = "MSLA"
+summary = "OpenThread RCP (SL-OPENTHREAD/2.7.2.0_GitHub-fb0446f53) for the SkyConnect / Connect ZBT-1, mirrored from Nabu Casa's silabs-firmware-builder v2026.02.23."
+
+[sdk]
+name = "sisdk"
+version = "2025.6.2"
+
+[stack]
+openthread = "SL-OPENTHREAD/2.7.2.0_GitHub-fb0446f53"
+
+[serial]
+baud = 460800
+flow = "rtscts"
+
+# Nabu Casa's official build (Apache-2.0 builder, MSLA firmware), pinned by sha256 and listed straight from upstream.
+# Verify once when adding or bumping it: `python3 -m tools.mirror packages/<name>`.
+[source]
+type = "url"
+url = "https://github.com/NabuCasa/silabs-firmware-builder/releases/download/v2026.02.23/skyconnect_openthread_rcp_2.7.2.0_GitHub-fb0446f53_gsdk_2025.6.2.gbl"
+sha256 = "15c70a4a235ccb8a086a29cb9f073d1f9346bf2ea0bca34fb6239ab9c9fe4ca2"
+size = 99952
+upstream = "NabuCasa/silabs-firmware-builder v2026.02.23"
+# Channel the mirror is listed on (dev until it passes the cage test).
+channel = "dev"

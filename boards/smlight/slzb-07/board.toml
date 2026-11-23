@@ -1,0 +1,8 @@
+# Third-party stick (no rN folder). Silicon Labs EFR32MG21: detected and identified only, never flashed by us.
+# The exact USB product string is unverified; "SLZB-07" is HA's usb discovery pattern (*slzb-07*, which lists the stick as 10c4:ea60), so both ids are matched. Some units ship without a unique product string.
+name = "SMLIGHT SLZB-07"
+host = "usb"
+identify_only = true
+match = { usb = [{ vid = "1a86", pid = "55d4", product = ["SLZB-07"] }, { vid = "10c4", pid = "ea60", product = ["SLZB-07"] }] }
+
+[slots.radio]

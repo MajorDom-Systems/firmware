@@ -1,0 +1,8 @@
+# Third-party stick (no rN folder). Silicon Labs ZGM130S (Z-Wave 700): detected and identified only, never flashed by us.
+# 10c4:ea60 is the generic CP210x id. Product string is "Zooz ZST10<NBSP>700 Z-Wave Stick" (a non-breaking space, per HA community), so the match stops before it.
+name = "Zooz ZST10 700 Z-Wave Stick"
+host = "usb"
+identify_only = true
+match = { usb = [{ vid = "10c4", pid = "ea60", product = ["Zooz ZST10"] }] }
+
+[slots.radio]

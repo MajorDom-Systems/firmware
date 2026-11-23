@@ -1,0 +1,8 @@
+# Third-party stick (no rN folder). TI CC2531: detected and identified only, never flashed by us.
+# Product string is the TI CDC firmware's default (lsusb: "Texas Instruments TI CC2531 USB CDC"); unverified against a unit.
+name = "Texas Instruments CC2531 USB dongle"
+host = "usb"
+identify_only = true
+match = { usb = [{ vid = "0451", pid = "16a8", product = ["TI CC2531 USB CDC"] }] }
+
+[slots.radio]
