@@ -83,11 +83,12 @@ def test_missing_gbl_or_meta_fails():
         manifests([release("1.0.0")], {})
 
 
-def test_packages_only_proto_boards_list_stay_off_the_channel():
+def test_packages_only_proto_boards_list_stay_on_the_dev_channel():
     rel = release("1.0.0", package="mg26-multipan-pa04-pa05")
     found = {rel["tag_name"]: meta("1.0.0", "mg26-multipan-pa04-pa05")}
     out = manifests([rel], found, boards=load_boards())
-    assert out["stable"]["firmware"] == out["dev"]["firmware"] == {}
+    assert out["stable"]["firmware"] == {}
+    assert versions(out["dev"], "mg26-multipan-pa04-pa05") == ["1.0.0"]
     hidden = manifests([rel], found, boards=load_boards(), hidden=True)
     assert versions(hidden["stable"], "mg26-multipan-pa04-pa05") == ["1.0.0"]
 

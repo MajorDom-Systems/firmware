@@ -36,7 +36,7 @@ A `build` package declares `[build] builder = "<name>"` plus its inputs (project
 
 ## Releases
 
-The channel files (`stable.json`, `dev.json`, `boards.json`) carry public entries only. `index.html` lists everything; pre-releases, proto boards and the packages only they list are hidden until its "Show dev" checkbox is ticked (CSS only, no script).
+`boards.json` leaves out proto boards, and the packages only they list go to `dev.json` only, never `stable.json`. `index.html` lists everything; pre-releases, proto boards and the packages only they list are hidden until its "Show dev" checkbox is ticked (CSS only, no script).
 
 Pushes to `develop` plan and build changed packages as a dry run (workflow artifacts). A dispatch of "Release packages" with `dry_run` unticked tags and publishes pre-releases (dev channel); `gh release edit <tag> --prerelease=false` promotes one to stable.
 

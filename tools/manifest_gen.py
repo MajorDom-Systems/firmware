@@ -4,8 +4,8 @@ Channel = the GitHub pre-release flag: every release is in dev.json, only full r
 skipped. A release whose notes carry the front-matter line `yanked: true` is dropped from both channels.
 Mirrors (`[source] type = "url"`) have no release: their entry comes from package.toml and points at the upstream URL,
 on the channel `[source] channel` names. Downgrades are allowed on the dev channel only (`policy.downgrade`).
-Dev-only `proto-` boards and the packages only they list stay off the channel files; index.html still carries them,
-hidden behind its "Show dev" toggle with the pre-releases.
+Dev-only `proto-` boards stay off boards.json, and the packages only they list go to dev.json only, even as full releases;
+index.html carries them hidden behind its "Show dev" toggle with the pre-releases.
 """
 
 import argparse
@@ -84,7 +84,7 @@ def mirror_entry(package: Package) -> dict[str, Any]:
 
 def manifests(releases: list[dict], metas: dict[str, dict], packages: dict[str, Package], boards: dict[str, dict],
               boards_sha256: str, now: datetime, hidden: bool = False) -> dict[str, dict]:
-    """The channel documents; packages only proto boards list are left out unless `hidden` (the index page's view)."""
+    """The channel documents; packages only proto boards list stay off stable unless `hidden` (the index page's view)."""
     channels: dict[str, dict[str, list]] = {"stable": {}, "dev": {}}
     items = []
     for release in releases:
@@ -95,9 +95,9 @@ def manifests(releases: list[dict], metas: dict[str, dict], packages: dict[str, 
         items.append(entry(release, meta))
     items += [mirror_entry(p) for p in packages.values() if p.source["type"] == "url"]
     for item in items:
-        if hidden or not is_hidden(item["package"], boards):
-            for channel in ("dev",) if item["stability"] == "dev" else ("stable", "dev"):
-                channels[channel].setdefault(item["package"], []).append(item)
+        dev_only = item["stability"] == "dev" or (not hidden and is_hidden(item["package"], boards))
+        for channel in ("dev",) if dev_only else ("stable", "dev"):
+            channels[channel].setdefault(item["package"], []).append(item)
     out = {}
     for channel, firmware in channels.items():
         for found in firmware.values():
