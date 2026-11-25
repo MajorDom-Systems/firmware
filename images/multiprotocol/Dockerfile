@@ -2,7 +2,7 @@
 #
 # Matches RCPs built on the same SiSDK release (CPC protocol v6; our MG26 runs SiSDK 2025.6.3, CPC 4.7.1).
 # Host programs and RCP firmware must come from ONE SDK release: do not mix with gsdk-4.4.x radios.
-#   docker buildx build --platform linux/arm64 -t majordom/multiprotocol:sisdk-2025.6.3 --load .
+#   docker buildx build --build-context thread-source=../thread-source --platform linux/arm64 -t majordom/multiprotocol:sisdk-2025.6.3 --load .
 ARG DEBIAN=debian:bookworm-slim
 # mDNS publisher behind otbr-agent:
 #   avahi          otbr-agent built from SiSDK's ot-br-posix publishes through the HOST's avahi-daemon, so the hub
@@ -103,6 +103,7 @@ COPY --from=py /opt/venv /opt/venv
 COPY LICENSES /usr/share/doc/majordom-multiprotocol/
 COPY cpcd.conf.tmpl /usr/share/majordom/cpcd.conf.tmpl
 COPY entrypoint.sh /entrypoint.sh
+COPY --from=thread-source --chmod=755 run /thread-source
 ENV PATH=/opt/venv/bin:$PATH
 # Fails the build when a copied binary misses a shared library.
 RUN ldconfig && ! ldd /usr/bin/cpcd /usr/local/bin/zigbeed /usr/sbin/otbr-agent /usr/sbin/ot-ctl $(command -v mdnsd) | grep "not found" \
