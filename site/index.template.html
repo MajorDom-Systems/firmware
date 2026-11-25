@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MajorDom radio firmware</title>
+<title>MajorDom firmware</title>
 <style>
   :root { color-scheme: light dark; --fg: #1b1b1f; --bg: #fff; --muted: #66666e; --line: #e2e2e6; }
   @media (prefers-color-scheme: dark) { :root { --fg: #ececf0; --bg: #141417; --muted: #9a9aa3; --line: #2c2c32; } }
@@ -21,7 +21,7 @@
 </style>
 </head>
 <body>
-<h1>MajorDom radio firmware</h1>
+<h1>MajorDom firmware</h1>
 <p>Manifests: <a href="v1/stable.json">stable.json</a> · <a href="v1/dev.json">dev.json</a> (signed, <code>.minisig</code>) · <a href="v1/boards.json">boards.json</a> · <a href="llms.txt">llms.txt</a>. Issued {{issued_at}}. Flash a <code>.gbl</code> over UART (universal-silabs-flasher, <code>cpcd -f</code>), a <code>_full.s37</code> over SWD (<code>commander flash</code>).</p>
 <label><input type="checkbox" id="show-dev"> Show dev (pre-releases, dev-only boards and their firmware)</label>
 <div class="scroll">

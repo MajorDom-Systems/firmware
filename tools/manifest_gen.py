@@ -135,8 +135,8 @@ def render_index(dev: dict, boards: dict, template: str) -> str:
 
 
 def render_llms(dev: dict) -> str:
-    lines = ["# MajorDom radio firmware", "",
-             "> Signed firmware channel for MajorDom radios (Silicon Labs EFR32/ZGM230). Files are GitHub Release assets, or pinned upstream URLs for mirrors.", "",
+    lines = ["# MajorDom firmware", "",
+             "> Signed firmware channel for MajorDom peripherals and supported devices (Silicon Labs EFR32/ZGM230). Files are GitHub Release assets, or pinned upstream URLs for mirrors.", "",
              f"- Manifests: {SITE_URL}/v1/stable.json and {SITE_URL}/v1/dev.json, each with a minisign signature (.minisig)",
              f"- Boards: {SITE_URL}/v1/boards.json", "- Public key: https://github.com/MajorDom-Systems/firmware/blob/develop/keys/minisign.pub",
              "- Flash a .gbl over UART with universal-silabs-flasher or `cpcd -f`; a _full.s37 over SWD with `commander flash`.", "",

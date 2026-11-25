@@ -1,4 +1,4 @@
-# MajorDom radio firmware
+# MajorDom firmware
 
 Firmware for the radios MajorDom drives (Silicon Labs EFR32 / ZGM230), published as GitHub Releases and a signed channel (`v1/stable.json`, `v1/dev.json`, `v1/boards.json`) on GitHub Pages. Binaries are release assets (mirrors: their upstream URL), never committed.
 
