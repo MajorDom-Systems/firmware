@@ -26,7 +26,7 @@ A `url` package mirrors a third-party build without re-hosting it: its channel e
 `boards/<vendor>/[proto-]<product><generation>-<platform>[-<wiring>]/r<N>`, e.g. `majordom/hub1-cm4/r1`, `majordom/hub1-cm3/r1`, `majordom/hub2-cm4/r1`, `majordom/proto-hub1-cm4-devkits/r1`.
 
 - The generation is part of the product name; `r<N>` is the PCB revision. A new `r<N>` folder only when wiring or resets change; a `board.toml` may list the revisions it covers (`revisions = [1, 2]`).
-- `proto-` marks dev-only setups. Proto boards never appear on the public channel; a package is public unless every board listing it is `proto-`.
+- `proto-` marks dev-only setups. Proto boards stay off `boards.json`, and a package every listing board of which is `proto-` goes to the dev channel only.
 - Third-party sticks keep their vendor id without `r<N>` (`nabucasa/skyconnect`, `sonoff/zbdongle-p`): their revisions are not ours to track; the USB match rules identify them.
 - Only boards with shipped firmware or a manifest in use exist here; no placeholder folders.
 
