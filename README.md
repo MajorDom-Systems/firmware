@@ -1,6 +1,6 @@
 # MajorDom firmware
 
-Firmware for the radios MajorDom drives (Silicon Labs EFR32 / ZGM230), published as GitHub Releases and a signed channel (`v1/stable.json`, `v1/dev.json`, `v1/boards.json`) on GitHub Pages. Binaries are release assets (mirrors: their upstream URL), never committed.
+Firmware for the radios MajorDom drives (Silicon Labs EFR32 / ZGM230), published as GitHub Releases and a signed channel (`v1/stable.json`, `v1/dev.json`, `v1/boards.json`) on GitHub Pages, and the host-side radio stacks that must match it, published as container images on GHCR. Binaries are release assets (mirrors: their upstream URL), never committed.
 
 ## Layout
 
@@ -9,6 +9,7 @@ Firmware for the radios MajorDom drives (Silicon Labs EFR32 / ZGM230), published
 - `protocol` is the language the firmware speaks, in the integration SDK's `Need`/`Endpoint` protocol vocabulary: `ezsp` (Zigbee NCP), `spinel` (Thread RCP), `silabs-cpc` (multi-PAN RCP), `zwave-serial-api` (Z-Wave). The SDK picks the driver by it.
 - CI checks every slot: each listed package exists, all target the same chip (the slot's chip is derived from them), `default` is in the list.
 - `builder/<name>/`: a builder (see below).
+- `images/<name>/`: a host image a hub runs next to a radio (see Images).
 - `tools/`: `release_plan`, `build`, `meta`, `board_json`, `manifest_gen`, `mirror`.
 
 The runtime `board.json` (installed by the OS image at `/etc/majordom/board.json`) is generated from a board's slots and their default packages, never hand-written: `python3 -m tools.board_json majordom/proto-hub1-cm4-devkits/r1`. The site publishes it per public host-wired board at `v1/<board>/board.json`. Shape: `{"schema": 1, "board", "revision", "slots": [{"name", "path", "driver", "firmware"?, "params"}]}`. `driver` and `firmware` are the SDK's driver and firmware names for the default package's `protocol` (`tools/board_json.py` `DRIVERS`); the Hub passes them to the SDK's `FixedRadio` as they are. A slot without a default gets only `driver`, which identifies the running firmware; `params` carry baud/flow of the default package and the reset GPIO.
@@ -40,8 +41,18 @@ A `build` package declares `[build] builder = "<name>"` plus its inputs (project
 
 Pushes to `develop` plan and build changed packages as a dry run (workflow artifacts). A dispatch of "Release packages" with `dry_run` unticked tags and publishes pre-releases (dev channel); `gh release edit <tag> --prerelease=false` promotes one to stable.
 
+## Images
+
+The border routers a hub runs in a container, built here so their host programs match the radio firmware:
+
+- `multiprotocol`: cpcd + zigbeed + otbr-agent for a multi-PAN RCP, from Silicon Labs' first-party SiSDK debs. Its SiSDK release must be the one the RCP firmware is built with (`mg26-multipan-*` packages): a mismatch connects but hangs network operations.
+- `otbr`: the upstream OpenThread Border Router, pinned by digest, for a plain Thread RCP.
+- `thread-source/run`: built into both; lets the hub reach Thread nodes over TCP (see the script).
+
+Pushes to `master` that touch `images/` publish them to `ghcr.io/majordom-systems/<name>` for arm64 and amd64 (`.github/workflows/images.yml`). The run summary prints each digest; the integration SDK pins the images by it (`runtime/peripherals/services/builtin.py`), so a new image reaches hubs only with an SDK change. Build one locally with `docker buildx build --build-context thread-source=images/thread-source images/<name>`.
+
 ## Silicon Labs licensing
 
-Silicon Labs firmware is under the Silicon Labs MSLA. The Simplicity SDK, its tools (slc-cli, Commander), Simplicity Studio and the builder image are never redistributed: CI only uses Silicon Labs' publicly downloadable tools to build. Compiled Silicon Labs firmware binaries are published as release assets for MajorDom and eligible hardware, as Nabu Casa does. See `NOTICE`.
+Silicon Labs firmware is under the Silicon Labs MSLA. The Simplicity SDK, its tools (slc-cli, Commander), Simplicity Studio and the builder image are never redistributed: CI only uses Silicon Labs' publicly downloadable tools to build. Compiled Silicon Labs firmware binaries are published as release assets for MajorDom and eligible hardware, and the `multiprotocol` image carries Silicon Labs' runtime programs (cpcd, zigbeed, otbr-agent) with their licence texts and no SDK or tools, as Nabu Casa does. See `NOTICE`.
 
 Tests: `poetry install && poetry run pytest`.
