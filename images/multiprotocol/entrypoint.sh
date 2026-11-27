@@ -16,6 +16,8 @@
 #   RADIO_RESET_GPIO                <gpiochip>:<line> wired to the RCP's RESETn (e.g. gpiochip0:23 on the CM4):
 #                                   pulsed while cpcd waits, so it syncs on the reset reason
 #   EZSP_TCP_PORT  9999             bellows connects to socket://<host>:9999
+#   EZSP_CONTROL_PORT 9998          forms or restores the Zigbee network on the pty (see ncp-control below):
+#                                   `form` or `restore` plus a zigpy backup as JSON, answers `ok` or `error: …`
 #   OTBR_REST_PORT 8081             Matter server reads the Thread dataset here
 #   LISTEN_ADDRESS 127.0.0.1        where both ports answer: only this host; 0.0.0.0 exposes them on the LAN
 #                                   (a lab harness: nothing guards them)
@@ -32,6 +34,7 @@ RADIO_BAUD=${RADIO_BAUD:-460800}
 RADIO_HARDFLOW=${RADIO_HARDFLOW:-true}
 RADIO_RESET_GPIO=${RADIO_RESET_GPIO:-}
 EZSP_TCP_PORT=${EZSP_TCP_PORT:-9999}
+EZSP_CONTROL_PORT=${EZSP_CONTROL_PORT:-9998}
 CHANNEL=${CHANNEL:-15}
 OTBR_REST_PORT=${OTBR_REST_PORT:-8081}
 LISTEN_ADDRESS=${LISTEN_ADDRESS:-127.0.0.1}
@@ -40,6 +43,55 @@ ZIGBEE_FORM=${ZIGBEE_FORM:-1}
 THREAD_FORM=${THREAD_FORM:-1}
 
 log() { echo "[multiprotocol] $*"; }
+ZB_HOST_PTY=/dev/ttyZigbeeNCP
+expose_ezsp() {
+  setsid socat "tcp-listen:${EZSP_TCP_PORT},bind=${LISTEN_ADDRESS},reuseaddr,fork" file:${ZB_HOST_PTY},raw,echo=0 </dev/null >/dev/null 2>&1 &
+}
+
+# ncp-control: one request on EZSP_CONTROL_PORT (socat runs this per connection). Forming and restoring a network
+# time out over the TCP bridge (frames are lost on it, while the same calls on the pty pass), so they run here on the
+# pty, as its single reader: the bridge is stopped meanwhile, its clients reconnect after.
+if [ "${1:-}" = ncp-control ]; then
+  read -r command
+  backup=$(mktemp) && cat >"${backup}" && chmod 600 "${backup}"  # keys: never logged
+  pkill -f "[t]cp-listen:${EZSP_TCP_PORT}," || true
+  sleep 1
+  rc=0
+  timeout 300 python3 - "${command}" "${ZB_HOST_PTY}" "${CHANNEL}" "${backup}" >/var/log/zigbee-control.log 2>&1 <<'EOF' || rc=$?
+import asyncio, json, sys
+
+import zigpy.backups
+import zigpy.config
+from bellows.zigbee.application import ControllerApplication
+
+command, path, channel, backup = sys.argv[1:]
+
+
+async def main():
+    config = {zigpy.config.CONF_DEVICE: {zigpy.config.CONF_DEVICE_PATH: path}, zigpy.config.CONF_DATABASE: None}
+    if command == "form":
+        config[zigpy.config.CONF_NWK] = {zigpy.config.CONF_NWK_CHANNEL: int(channel)}
+    app = await ControllerApplication.new(config, auto_form=False, start_radio=False)
+    try:
+        await app.connect()
+        if command == "restore":
+            await app.backups.restore_backup(zigpy.backups.NetworkBackup.from_dict(json.loads(open(backup).read())))
+        elif command == "form":
+            await app.form_network()
+        else:
+            raise ValueError(f"unknown command {command!r}")
+    finally:
+        await app.disconnect()
+
+
+asyncio.run(main())
+EOF
+  rm -f "${backup}"
+  expose_ezsp
+  for _ in $(seq 1 40); do ss -Hltn "sport = :${EZSP_TCP_PORT}" | grep -q . && break; sleep 0.25; done  # clients reconnect at once
+  if [ "${rc}" = 0 ]; then echo ok; else echo "error: ${command} failed (${rc}), see /var/log/zigbee-control.log"; fi
+  exit 0
+fi
 
 # 0. Kernel prerequisites that OTBR's Backbone-Router/ND-proxy needs (harmless if already set).
 sysctl -w net.ipv6.conf.all.forwarding=1 >/dev/null 2>&1 || true
@@ -86,7 +138,6 @@ log "cpcd attached: $(grep -oE 'Secondary (Protocol|CPC) v[^ ]+' /var/log/cpcd.l
 # zigbeed writes its emulated-NCP tokens to `host_token.nvm` relative to its cwd, so a cwd on a
 # mounted volume makes the formed coordinator survive container recreation — otherwise every
 # recreate re-forms a NEW network (new PAN id) and orphans already-paired devices.
-ZB_HOST_PTY=/dev/ttyZigbeeNCP
 ZB_STATE_DIR=${ZB_STATE_DIR:-/var/lib/zigbee}
 mkdir -p "${ZB_STATE_DIR}"
 socat pty,link=${ZB_HOST_PTY},raw,echo=0 pty,link=/tmp/ttyZigbeeNCP,raw,echo=0 &
@@ -196,8 +247,9 @@ fi
 
 # 6. Now expose EZSP over TCP for the Hub/bellows (socket://<host>:${EZSP_TCP_PORT}); steady-state
 # load + commands tolerate the bridge even though forming could not.
-socat "tcp-listen:${EZSP_TCP_PORT},bind=${LISTEN_ADDRESS},reuseaddr,fork" file:/dev/ttyZigbeeNCP,raw,echo=0 &
-log "zigbeed up; EZSP exposed on tcp:${EZSP_TCP_PORT} (bellows: socket://<host>:${EZSP_TCP_PORT})"
+expose_ezsp
+socat -t 330 "tcp-listen:${EZSP_CONTROL_PORT},bind=${LISTEN_ADDRESS},reuseaddr,fork" "exec:bash /entrypoint.sh ncp-control" &
+log "zigbeed up; EZSP exposed on tcp:${EZSP_TCP_PORT} (bellows: socket://<host>:${EZSP_TCP_PORT}), control on tcp:${EZSP_CONTROL_PORT}"
 
 # Thread TX power (THREAD_TX_DBM). On a multi-PAN RCP the radio transmits at Zigbee's power: `ot-ctl
 # txpower` reads back but isn't applied (observed 2026-10-13). Lower Zigbee's tx_power instead (zigpy's -10 dBm
